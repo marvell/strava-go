@@ -37,7 +37,7 @@ func NewClient(id, secret, redirectURL string, ts TokenStorage, opts ...Option) 
 			TokenURL: OAuthBaseURL + "/token",
 		},
 		RedirectURL: redirectURL,
-		Scopes:      []string{"activity:read", "activity:write"},
+		Scopes:      []string{"activity:write"},
 	}
 
 	c := &Client{
@@ -64,6 +64,7 @@ type Client struct {
 	retryDelay time.Duration
 
 	logger *slog.Logger
+	debug  bool
 }
 
 func (c *Client) call(ctx context.Context, athleteID uint, req *http.Request, retries uint) ([]byte, error) {
@@ -75,16 +76,18 @@ func (c *Client) call(ctx context.Context, athleteID uint, req *http.Request, re
 		}
 	}
 
-	httpClient, err := c.httpClient(ctx, athleteID)
+	httpClient, err := c.getHttpClientFor(ctx, athleteID)
 	if err != nil {
-		return nil, fmt.Errorf("get http client for athlete: %w", err)
+		return nil, fmt.Errorf("get http client for %d athlete: %w", athleteID, err)
 	}
 
-	reqDump, err := httputil.DumpRequestOut(req, false)
-	if err != nil {
-		c.logger.WarnContext(ctx, "dump request", slog.Any("error", err))
-	} else {
-		c.logger.DebugContext(ctx, "request", slog.Any("dump", reqDump))
+	if c.debug {
+		reqDump, err := httputil.DumpRequestOut(req, false)
+		if err != nil {
+			c.logger.WarnContext(ctx, "dump request", slog.Any("error", err))
+		} else {
+			c.logger.DebugContext(ctx, "request", slog.Any("dump", reqDump))
+		}
 	}
 
 	resp, err := httpClient.Do(req)
@@ -102,11 +105,13 @@ func (c *Client) call(ctx context.Context, athleteID uint, req *http.Request, re
 	}
 	defer resp.Body.Close()
 
-	respDump, err := httputil.DumpResponse(resp, true)
-	if err != nil {
-		c.logger.WarnContext(ctx, "dump response", slog.Any("error", err))
-	} else {
-		c.logger.DebugContext(ctx, "response", slog.Any("dump", respDump))
+	if c.debug {
+		respDump, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			c.logger.WarnContext(ctx, "dump response", slog.Any("error", err))
+		} else {
+			c.logger.DebugContext(ctx, "response", slog.Any("dump", respDump))
+		}
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -117,7 +122,7 @@ func (c *Client) call(ctx context.Context, athleteID uint, req *http.Request, re
 	return body, nil
 }
 
-func (c *Client) httpClient(ctx context.Context, athleteID uint) (*http.Client, error) {
+func (c *Client) getHttpClientFor(ctx context.Context, athleteID uint) (*http.Client, error) {
 	token, err := c.token(ctx, athleteID)
 	if err != nil {
 		return nil, err

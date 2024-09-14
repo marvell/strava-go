@@ -25,3 +25,9 @@ func WithRetries(max uint, delay time.Duration) Option {
 		c.retryDelay = delay
 	}
 }
+
+func WithDebug() Option {
+	return func(c *Client) {
+		c.debug = true
+	}
+}

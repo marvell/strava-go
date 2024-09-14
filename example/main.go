@@ -2,36 +2,80 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
-	"os"
-	"strconv"
 
+	"github.com/caarlos0/env/v11"
 	"github.com/marvell/strava-go"
-	"github.com/marvell/strava-go/inmemory"
+	"github.com/marvell/strava-go/file"
 )
+
+type Config struct {
+	ID          string `env:"STRAVA_ID,required"`
+	Secret      string `env:"STRAVA_SECRET,required"`
+	RedirectURL string `env:"STRAVA_REDIRECT_URL,required"`
+	AthleteID   uint   `env:"STRAVA_ATHLETE_ID"`
+}
 
 func main() {
 	slog.SetLogLoggerLevel(slog.LevelDebug)
 
-	id := os.Getenv("STRAVA_ID")
-	secret := os.Getenv("STRAVA_SECRET")
-	redirectURL := os.Getenv("STRAVA_REDIRECT_URL")
+	var config Config
+	if err := env.Parse(&config); err != nil {
+		panic(err)
+	}
 
-	athleteID, err := strconv.ParseUint(os.Getenv("STRAVA_ATHLETE_ID"), 10, 64)
+	ctx := context.Background()
+
+	ts, err := file.NewTokenStorage("./tokens")
 	if err != nil {
 		panic(err)
 	}
 
-	ts := &inmemory.TokenStorage{}
-	cl := strava.NewClient(id, secret, redirectURL, ts)
+	cl := strava.NewClient(config.ID, config.Secret, config.RedirectURL, ts)
 
-	ctx := context.Background()
+	athleteID := config.AthleteID
+	if athleteID == 0 {
+		athleteID = auth(ctx, cl)
+	} else {
+		_, err := ts.Get(ctx, athleteID)
+		if err != nil {
+			if !errors.Is(err, strava.ErrTokenNotFound) {
+				panic(err)
+			}
 
-	ath, err := cl.GetAthlete(ctx, uint(athleteID))
+			id := auth(ctx, cl)
+			if id != athleteID {
+				slog.Warn(fmt.Sprintf("STRAVA_ATHLETE_ID (%d) != authorized athlete ID (%d)", athleteID, id))
+			}
+			athleteID = id
+		}
+	}
+
+	ath, err := cl.GetAthlete(ctx, athleteID)
 	if err != nil {
 		panic(err)
 	}
 
 	slog.Info(fmt.Sprintf("athlete: %+v", ath))
+}
+
+func auth(ctx context.Context, cl *strava.Client) uint {
+	fmt.Printf("You need to authorize first.\n")
+	fmt.Printf("Strava auth URL: %s\n", cl.AuthCodeURL())
+
+	fmt.Print("Enter code: ")
+	var stravaCode string
+	_, err := fmt.Scanln(&stravaCode)
+	if err != nil {
+		panic(err)
+	}
+
+	athleteID, err := cl.AuthExchange(ctx, stravaCode)
+	if err != nil {
+		panic(err)
+	}
+
+	return athleteID
 }

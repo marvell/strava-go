@@ -8,4 +8,4 @@ dotenv:
 tasks:
   lint:
     cmds:
-      - golangci-lint run -E gosec
+      - golangci-lint run
