@@ -99,7 +99,7 @@ func (c *Client) getActivities(ctx context.Context, athleteID uint, from, to tim
 	params.Add("after", fmt.Sprint(from.Unix()))
 	params.Add("before", fmt.Sprint(to.Unix()))
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/athlete/activities", APIBaseURL)+params.Encode(), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/athlete/activities?", APIBaseURL)+params.Encode(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create request: %w", err)
 	}

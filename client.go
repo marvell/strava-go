@@ -37,7 +37,7 @@ func NewClient(id, secret, redirectURL string, ts TokenStorage, opts ...Option) 
 			TokenURL: OAuthBaseURL + "/token",
 		},
 		RedirectURL: redirectURL,
-		Scopes:      []string{"activity:write"},
+		Scopes:      []string{"activity:read_all,activity:write"},
 	}
 
 	c := &Client{
