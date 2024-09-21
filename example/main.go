@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/caarlos0/env/v11"
 	"github.com/marvell/strava-go"
@@ -33,7 +34,7 @@ func main() {
 		panic(err)
 	}
 
-	cl := strava.NewClient(config.ID, config.Secret, config.RedirectURL, ts)
+	cl := strava.NewClient(config.ID, config.Secret, config.RedirectURL, ts, strava.WithDebug())
 
 	athleteID := config.AthleteID
 	if athleteID == 0 {
@@ -57,8 +58,28 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	slog.Info(fmt.Sprintf("athlete: %+v", ath))
+
+	to := time.Now()
+	from := to.Add(-time.Hour * 24 * 7)
+
+	activities, err := cl.GetActivities(ctx, athleteID, from, to)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, a := range activities {
+		slog.Info(fmt.Sprintf("%d %s\n", a.ID, a.StartDate))
+
+		laps, err := cl.GetActivityLaps(ctx, athleteID, a.ID)
+		if err != nil {
+			panic(err)
+		}
+
+		for _, lap := range laps {
+			slog.Info(fmt.Sprintf("\t%d %.2fm %s %s %.0f\n", lap.LapIndex, lap.Distance, lap.MovingDuration(), lap.AveragePace(), lap.AverageHeartrate))
+		}
+	}
 }
 
 func auth(ctx context.Context, cl *strava.Client) uint {
