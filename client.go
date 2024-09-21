@@ -2,6 +2,7 @@ package strava
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -117,6 +118,16 @@ func (c *Client) call(ctx context.Context, athleteID uint, req *http.Request, re
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		var apiErr APIError
+		err := json.Unmarshal(body, &apiErr)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal error response: %w", err)
+		}
+
+		return nil, fmt.Errorf("API error (status code %d): %w", resp.StatusCode, apiErr)
 	}
 
 	return body, nil
