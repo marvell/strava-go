@@ -1,6 +1,7 @@
 # strava-go
 
-strava-go is a Go library for interacting with the Strava API. It provides a simple and efficient way to authenticate and make requests to Strava's API endpoints.
+[![Strava API Docs](https://img.shields.io/badge/Strava%20API-Reference-orange)](https://developers.strava.com/docs/reference/)
+strava-go is a Go library for interacting with the Strava API. It provides a simple and efficient way to authenticate and make requests to Strava's API endpoints. The library is designed to work with the official Strava API, which is documented in the [Strava API and SDK Reference](https://developers.strava.com/docs/reference/). For interactive exploration and testing of API endpoints, you can use the [Strava API Playground](https://developers.strava.com/playground/), which provides a user-friendly interface to try out various API calls and see their responses.
 
 ## Features
 
