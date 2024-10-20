@@ -2,6 +2,7 @@ package strava
 
 import (
 	"log/slog"
+	"net/http"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -29,5 +30,11 @@ func WithRetries(max uint, delay time.Duration) Option {
 func WithDebug() Option {
 	return func(c *Client) {
 		c.debug = true
+	}
+}
+
+func WithTransport(t *http.Transport) Option {
+	return func(c *Client) {
+		c.transport = t
 	}
 }

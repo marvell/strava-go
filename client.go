@@ -56,8 +56,9 @@ func NewClient(id, secret, redirectURL string, ts TokenStorage, opts ...Option) 
 }
 
 type Client struct {
-	oacfg  oauth2.Config
-	tstore TokenStorage
+	transport *http.Transport
+	oacfg     oauth2.Config
+	tstore    TokenStorage
 
 	lmt *rate.Limiter
 
@@ -121,13 +122,14 @@ func (c *Client) call(ctx context.Context, athleteID uint, req *http.Request, re
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		var details any = body
+
 		var apiErr APIError
-		err := json.Unmarshal(body, &apiErr)
-		if err != nil {
-			return nil, fmt.Errorf("failed to unmarshal error response: %w", err)
+		if err := json.Unmarshal(body, &apiErr); err == nil {
+			details = apiErr
 		}
 
-		return nil, fmt.Errorf("API error (status code %d): %w", resp.StatusCode, apiErr)
+		return nil, fmt.Errorf("API error (status code %d): %v", resp.StatusCode, details)
 	}
 
 	return body, nil
@@ -137,6 +139,12 @@ func (c *Client) getHttpClientFor(ctx context.Context, athleteID uint) (*http.Cl
 	token, err := c.token(ctx, athleteID)
 	if err != nil {
 		return nil, err
+	}
+
+	if c.transport != nil {
+		ctx = context.WithValue(ctx, oauth2.HTTPClient, &http.Client{
+			Transport: c.transport,
+		})
 	}
 
 	hc := c.oacfg.Client(ctx, token)
