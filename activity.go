@@ -14,11 +14,11 @@ const (
 	AthleteActivitiesPerPage = 100
 )
 
-func (c *Client) GetActivities(ctx context.Context, athleteID uint, from, to time.Time) ([]*DetailedActivity, error) {
-	var activities []*DetailedActivity
+func (c *Client) GetSummaryActivities(ctx context.Context, athleteID uint, from, to time.Time) ([]*SummaryActivity, error) {
+	var activities []*SummaryActivity
 
 	for i := 1; ; i++ {
-		a, err := c.getActivities(ctx, athleteID, from, to, i, AthleteActivitiesPerPage)
+		a, err := c.getSummaryActivities(ctx, athleteID, from, to, i, AthleteActivitiesPerPage)
 		if err != nil {
 			return nil, err
 		}
@@ -33,9 +33,9 @@ func (c *Client) GetActivities(ctx context.Context, athleteID uint, from, to tim
 	return activities, nil
 }
 
-func (c *Client) GetActivitiesWithCallback(ctx context.Context, athleteID uint, from, to time.Time, callback func([]*DetailedActivity) error) error {
+func (c *Client) GetSummaryActivitiesWithCallback(ctx context.Context, athleteID uint, from, to time.Time, callback func([]*SummaryActivity) error) error {
 	for i := 1; ; i++ {
-		a, err := c.getActivities(ctx, athleteID, from, to, i, AthleteActivitiesPerPage)
+		a, err := c.getSummaryActivities(ctx, athleteID, from, to, i, AthleteActivitiesPerPage)
 		if err != nil {
 			return err
 		}
@@ -77,7 +77,7 @@ func (c *Client) UpdateActivity(ctx context.Context, athleteID, activityID uint,
 	return nil
 }
 
-func (c *Client) getActivities(ctx context.Context, athleteID uint, from, to time.Time, page, limit int) ([]*DetailedActivity, error) {
+func (c *Client) getSummaryActivities(ctx context.Context, athleteID uint, from, to time.Time, page, limit int) ([]*SummaryActivity, error) {
 	params := url.Values{}
 	params.Add("per_page", fmt.Sprint(limit))
 	params.Add("page", fmt.Sprint(page))
@@ -94,11 +94,32 @@ func (c *Client) getActivities(ctx context.Context, athleteID uint, from, to tim
 		return nil, fmt.Errorf("could not call: %w", err)
 	}
 
-	var v []*DetailedActivity
+	var v []*SummaryActivity
 	err = json.Unmarshal(body, &v)
 	if err != nil {
 		return nil, err
 	}
 
 	return v, nil
+}
+
+func (c *Client) GetDetailedActivity(ctx context.Context, athleteID, activityID uint) (*DetailedActivity, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("%s/activities/%d", APIBaseURL, activityID), nil)
+	if err != nil {
+		return nil, fmt.Errorf("could not create request: %w", err)
+	}
+
+	body, err := c.call(ctx, athleteID, req, c.maxRetries)
+	if err != nil {
+		return nil, fmt.Errorf("could not call strava: %w", err)
+	}
+
+	var v DetailedActivity
+	err = json.Unmarshal(body, &v)
+	if err != nil {
+		return nil, err
+	}
+
+	return &v, nil
+
 }

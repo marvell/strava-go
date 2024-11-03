@@ -124,7 +124,7 @@ func (c *Client) call(ctx context.Context, athleteID uint, req *http.Request, re
 	if resp.StatusCode != http.StatusOK {
 		var details any = body
 
-		var apiErr APIError
+		var apiErr Fault
 		if err := json.Unmarshal(body, &apiErr); err == nil {
 			details = apiErr
 		}

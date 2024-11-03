@@ -1,89 +1,174 @@
 package strava
 
-import (
-	"time"
-)
+import "time"
 
-// Models generated from Strava API v3 Swagger specification
-
-// ActivityStats represents the stats of an athlete's activities.
-type ActivityStats struct {
-	BiggestRideDistance       float64        `json:"biggest_ride_distance"`
-	BiggestClimbElevationGain float64        `json:"biggest_climb_elevation_gain"`
-	RecentRideTotals          *ActivityTotal `json:"recent_ride_totals"`
-	RecentRunTotals           *ActivityTotal `json:"recent_run_totals"`
-	RecentSwimTotals          *ActivityTotal `json:"recent_swim_totals"`
-	YtdRideTotals             *ActivityTotal `json:"ytd_ride_totals"`
-	YtdRunTotals              *ActivityTotal `json:"ytd_run_totals"`
-	YtdSwimTotals             *ActivityTotal `json:"ytd_swim_totals"`
-	AllRideTotals             *ActivityTotal `json:"all_ride_totals"`
-	AllRunTotals              *ActivityTotal `json:"all_run_totals"`
-	AllSwimTotals             *ActivityTotal `json:"all_swim_totals"`
+// Fault represents a Strava API error response
+type Fault struct {
+	Errors   []Error `json:"errors"`
+	Message  string  `json:"message"`
+	Resource string  `json:"resource"`
 }
 
-// ActivityTotal represents the total stats for an activity type.
-type ActivityTotal struct {
-	Count         int     `json:"count"`
-	Distance      float64 `json:"distance"`
-	MovingTime    int     `json:"moving_time"`
-	ElapsedTime   int     `json:"elapsed_time"`
-	ElevationGain float64 `json:"elevation_gain"`
+// Error represents a specific error in a Fault response
+type Error struct {
+	Code     string `json:"code"`
+	Field    string `json:"field"`
+	Resource string `json:"resource"`
 }
 
-// DetailedAthlete represents detailed information about an athlete.
+// Athlete represents a Strava athlete
+type Athlete struct {
+	ID                    uint    `json:"id"`
+	FirstName             string  `json:"firstname"`
+	LastName              string  `json:"lastname"`
+	ProfileMedium         string  `json:"profile_medium"`
+	Profile               string  `json:"profile"`
+	City                  string  `json:"city"`
+	State                 string  `json:"state"`
+	Country               string  `json:"country"`
+	Sex                   string  `json:"sex"`
+	Premium               bool    `json:"premium"`
+	Summit                bool    `json:"summit"`
+	CreatedAt             string  `json:"created_at"`
+	UpdatedAt             string  `json:"updated_at"`
+	FollowerCount         int     `json:"follower_count"`
+	FriendCount           int     `json:"friend_count"`
+	MeasurementPreference string  `json:"measurement_preference"`
+	FTP                   int     `json:"ftp"`
+	Weight                float64 `json:"weight"`
+	Clubs                 []Club  `json:"clubs"`
+	Bikes                 []Gear  `json:"bikes"`
+	Shoes                 []Gear  `json:"shoes"`
+}
+
+// DetailedAthlete extends Athlete with additional fields
 type DetailedAthlete struct {
-	ID                    uint          `json:"id"`
-	Username              string        `json:"username"`
-	ResourceState         int           `json:"resource_state"`
-	Firstname             string        `json:"firstname"`
-	Lastname              string        `json:"lastname"`
-	City                  string        `json:"city"`
-	State                 string        `json:"state"`
-	Country               string        `json:"country"`
-	Sex                   string        `json:"sex"`
-	Premium               bool          `json:"premium"`
-	Summit                bool          `json:"summit"`
-	CreatedAt             time.Time     `json:"created_at"`
-	UpdatedAt             time.Time     `json:"updated_at"`
-	BadgeTypeID           uint          `json:"badge_type_id"`
-	ProfileMedium         string        `json:"profile_medium"`
-	Profile               string        `json:"profile"`
-	Friend                interface{}   `json:"friend"`
-	Follower              interface{}   `json:"follower"`
-	FollowerCount         int           `json:"follower_count"`
-	FriendCount           int           `json:"friend_count"`
-	MutualFriendCount     int           `json:"mutual_friend_count"`
-	AthleteType           int           `json:"athlete_type"`
-	DatePreference        string        `json:"date_preference"`
-	MeasurementPreference string        `json:"measurement_preference"`
-	Clubs                 []SummaryClub `json:"clubs"`
-	FTP                   int           `json:"ftp"`
-	Weight                float64       `json:"weight"`
-	Bikes                 []SummaryGear `json:"bikes"`
-	Shoes                 []SummaryGear `json:"shoes"`
+	Athlete
+	ResourceState     int    `json:"resource_state"`
+	MutualFriendCount int    `json:"mutual_friend_count"`
+	AthleteType       int    `json:"athlete_type"`
+	DatePreference    string `json:"date_preference"`
 }
 
-// SummaryClub represents summary information about a club.
-type SummaryClub struct {
-	ID              uint   `json:"id"`
-	ResourceState   int    `json:"resource_state"`
-	Name            string `json:"name"`
-	ProfileMedium   string `json:"profile_medium"`
-	Profile         string `json:"profile"`
-	CoverPhoto      string `json:"cover_photo"`
-	CoverPhotoSmall string `json:"cover_photo_small"`
-	SportType       string `json:"sport_type"`
-	City            string `json:"city"`
-	State           string `json:"state"`
-	Country         string `json:"country"`
-	Private         bool   `json:"private"`
-	MemberCount     int    `json:"member_count"`
-	Featured        bool   `json:"featured"`
-	Verified        bool   `json:"verified"`
-	Url             string `json:"url"`
+// Club represents a Strava club
+type Club struct {
+	ID              uint      `json:"id"`
+	Name            string    `json:"name"`
+	ProfileMedium   string    `json:"profile_medium"`
+	Profile         string    `json:"profile"`
+	CoverPhoto      string    `json:"cover_photo"`
+	CoverPhotoSmall string    `json:"cover_photo_small"`
+	SportType       SportType `json:"sport_type"`
+	City            string    `json:"city"`
+	State           string    `json:"state"`
+	Country         string    `json:"country"`
+	Private         bool      `json:"private"`
+	MemberCount     int       `json:"member_count"`
+	Featured        bool      `json:"featured"`
+	Verified        bool      `json:"verified"`
+	Url             string    `json:"url"`
 }
 
-// SummaryGear represents summary information about gear (bike or shoes).
+// Gear represents equipment like bikes or shoes
+type Gear struct {
+	ID            string  `json:"id"`
+	Primary       bool    `json:"primary"`
+	Name          string  `json:"name"`
+	ResourceState int     `json:"resource_state"`
+	Distance      float64 `json:"distance"`
+	BrandName     string  `json:"brand_name"`
+	ModelName     string  `json:"model_name"`
+	FrameType     int     `json:"frame_type,omitempty"`
+	Description   string  `json:"description"`
+}
+
+// Map represents a route map
+type Map struct {
+	ID              string `json:"id"`
+	Polyline        string `json:"polyline"`
+	SummaryPolyline string `json:"summary_polyline"`
+}
+
+// SummaryActivity represents a summary of an activity on Strava
+type SummaryActivity struct {
+	ID                   uint      `json:"id"`
+	ExternalID           string    `json:"external_id"`
+	UploadID             uint      `json:"upload_id"`
+	Athlete              *Athlete  `json:"athlete"`
+	Name                 string    `json:"name"`
+	Distance             float64   `json:"distance"`
+	MovingTime           int       `json:"moving_time"`
+	ElapsedTime          int       `json:"elapsed_time"`
+	TotalElevationGain   float64   `json:"total_elevation_gain"`
+	ElevHigh             float64   `json:"elev_high"`
+	ElevLow              float64   `json:"elev_low"`
+	Type                 string    `json:"type"`
+	SportType            SportType `json:"sport_type"`
+	StartDate            time.Time `json:"start_date"`
+	StartDateLocal       time.Time `json:"start_date_local"`
+	Timezone             string    `json:"timezone"`
+	StartLatLng          []float64 `json:"start_latlng"`
+	EndLatLng            []float64 `json:"end_latlng"`
+	AchievementCount     int       `json:"achievement_count"`
+	KudosCount           int       `json:"kudos_count"`
+	CommentCount         int       `json:"comment_count"`
+	AthleteCount         int       `json:"athlete_count"`
+	PhotoCount           int       `json:"photo_count"`
+	TotalPhotoCount      int       `json:"total_photo_count"`
+	Map                  *Map      `json:"map"`
+	Trainer              bool      `json:"trainer"`
+	Commute              bool      `json:"commute"`
+	Manual               bool      `json:"manual"`
+	Private              bool      `json:"private"`
+	Flagged              bool      `json:"flagged"`
+	WorkoutType          int       `json:"workout_type"`
+	GearID               string    `json:"gear_id"`
+	AverageSpeed         float64   `json:"average_speed"`
+	MaxSpeed             float64   `json:"max_speed"`
+	AverageCadence       float64   `json:"average_cadence"`
+	AverageTemp          float64   `json:"average_temp"`
+	AverageWatts         float64   `json:"average_watts"`
+	WeightedAverageWatts int       `json:"weighted_average_watts"`
+	Kilojoules           float64   `json:"kilojoules"`
+	DeviceWatts          bool      `json:"device_watts"`
+	HasHeartrate         bool      `json:"has_heartrate"`
+	AverageHeartrate     float64   `json:"average_heartrate"`
+	MaxHeartrate         float64   `json:"max_heartrate"`
+	MaxWatts             int       `json:"max_watts"`
+	SufferScore          int       `json:"suffer_score"`
+}
+
+// DetailedActivity represents a detailed activity on Strava
+type DetailedActivity struct {
+	SummaryActivity
+	Description    string                   `json:"description"`
+	Photos         *PhotosSummary           `json:"photos"`
+	Gear           *SummaryGear             `json:"gear"`
+	Calories       float64                  `json:"calories"`
+	SegmentEfforts []*DetailedSegmentEffort `json:"segment_efforts"`
+	DeviceName     string                   `json:"device_name"`
+	EmbedToken     string                   `json:"embed_token"`
+	SplitsMetric   []*Split                 `json:"splits_metric"`
+	SplitsStandard []*Split                 `json:"splits_standard"`
+	Laps           []*Lap                   `json:"laps"`
+	BestEfforts    []*DetailedSegmentEffort `json:"best_efforts"`
+}
+
+// PhotosSummary represents a summary of photos for an activity
+type PhotosSummary struct {
+	Count   int           `json:"count"`
+	Primary *PhotoSummary `json:"primary"`
+}
+
+// PhotoSummary represents a summary of a photo
+type PhotoSummary struct {
+	ID       uint              `json:"id"`
+	Source   int               `json:"source"`
+	UniqueID string            `json:"unique_id"`
+	URLs     map[string]string `json:"urls"`
+}
+
+// SummaryGear represents a summary of gear used during an activity
 type SummaryGear struct {
 	ID            string  `json:"id"`
 	Primary       bool    `json:"primary"`
@@ -92,74 +177,18 @@ type SummaryGear struct {
 	Distance      float64 `json:"distance"`
 }
 
-// Zones represents heart rate and power zones.
-type Zones struct {
-	HeartRate []ZoneRange `json:"heart_rate"`
-	Power     []ZoneRange `json:"power"`
-}
-
-// ZoneRange represents a single zone range.
-type ZoneRange struct {
-	Min int `json:"min"`
-	Max int `json:"max"`
-}
-
-// DetailedSegment represents detailed information about a segment.
-type DetailedSegment struct {
-	ID                  uint                `json:"id"`
-	Name                string              `json:"name"`
-	ActivityType        string              `json:"activity_type"`
-	Distance            float64             `json:"distance"`
-	AverageGrade        float64             `json:"average_grade"`
-	MaximumGrade        float64             `json:"maximum_grade"`
-	ElevationHigh       float64             `json:"elevation_high"`
-	ElevationLow        float64             `json:"elevation_low"`
-	StartLatlng         []float64           `json:"start_latlng"`
-	EndLatlng           []float64           `json:"end_latlng"`
-	ClimbCategory       int                 `json:"climb_category"`
-	City                string              `json:"city"`
-	State               string              `json:"state"`
-	Country             string              `json:"country"`
-	Private             bool                `json:"private"`
-	Hazardous           bool                `json:"hazardous"`
-	Starred             bool                `json:"starred"`
-	CreatedAt           time.Time           `json:"created_at"`
-	UpdatedAt           time.Time           `json:"updated_at"`
-	TotalElevationGain  float64             `json:"total_elevation_gain"`
-	Map                 PolylineMap         `json:"map"`
-	EffortCount         int                 `json:"effort_count"`
-	AthleteCount        int                 `json:"athlete_count"`
-	StarCount           int                 `json:"star_count"`
-	AthleteSegmentStats AthleteSegmentStats `json:"athlete_segment_stats"`
-}
-
-// PolylineMap represents a map with polyline data.
-type PolylineMap struct {
-	ID            string `json:"id"`
-	Polyline      string `json:"polyline"`
-	ResourceState int    `json:"resource_state"`
-}
-
-// AthleteSegmentStats represents an athlete's stats for a segment.
-type AthleteSegmentStats struct {
-	PRElapsedTime int       `json:"pr_elapsed_time"`
-	PRDate        time.Time `json:"pr_date"`
-	EffortCount   int       `json:"effort_count"`
-}
-
-// DetailedSegmentEffort represents detailed information about a segment effort.
+// DetailedSegmentEffort represents a detailed segment effort
 type DetailedSegmentEffort struct {
 	ID               uint            `json:"id"`
-	ActivityID       uint            `json:"activity_id"`
+	ResourceState    int             `json:"resource_state"`
+	Name             string          `json:"name"`
+	Activity         *MetaActivity   `json:"activity"`
+	Athlete          *MetaAthlete    `json:"athlete"`
 	ElapsedTime      int             `json:"elapsed_time"`
+	MovingTime       int             `json:"moving_time"`
 	StartDate        time.Time       `json:"start_date"`
 	StartDateLocal   time.Time       `json:"start_date_local"`
 	Distance         float64         `json:"distance"`
-	IsKOM            bool            `json:"is_kom"`
-	Name             string          `json:"name"`
-	Activity         SummaryActivity `json:"activity"`
-	Athlete          SummaryAthlete  `json:"athlete"`
-	MovingTime       int             `json:"moving_time"`
 	StartIndex       int             `json:"start_index"`
 	EndIndex         int             `json:"end_index"`
 	AverageCadence   float64         `json:"average_cadence"`
@@ -167,27 +196,66 @@ type DetailedSegmentEffort struct {
 	DeviceWatts      bool            `json:"device_watts"`
 	AverageHeartrate float64         `json:"average_heartrate"`
 	MaxHeartrate     float64         `json:"max_heartrate"`
-	Segment          SummarySegment  `json:"segment"`
+	Segment          *SummarySegment `json:"segment"`
 	KOMRank          int             `json:"kom_rank"`
 	PRRank           int             `json:"pr_rank"`
 	Hidden           bool            `json:"hidden"`
 }
 
-// SummaryActivity represents summary information about an activity.
-type SummaryActivity struct {
+// Split represents a split in an activity
+type Split struct {
+	Distance                  float64 `json:"distance"`
+	ElapsedTime               int     `json:"elapsed_time"`
+	ElevationDifference       float64 `json:"elevation_difference"`
+	MovingTime                int     `json:"moving_time"`
+	Split                     int     `json:"split"`
+	AverageSpeed              float64 `json:"average_speed"`
+	AverageGradeAdjustedSpeed float64 `json:"average_grade_adjusted_speed"`
+	AverageHeartrate          float64 `json:"average_heartrate"`
+	PaceZone                  int     `json:"pace_zone"`
+}
+
+// Lap represents a lap in an activity
+type Lap struct {
+	ID                 uint          `json:"id"`
+	ResourceState      int           `json:"resource_state"`
+	Name               string        `json:"name"`
+	Activity           *MetaActivity `json:"activity"`
+	Athlete            *MetaAthlete  `json:"athlete"`
+	ElapsedTime        int           `json:"elapsed_time"`
+	MovingTime         int           `json:"moving_time"`
+	StartDate          time.Time     `json:"start_date"`
+	StartDateLocal     time.Time     `json:"start_date_local"`
+	Distance           float64       `json:"distance"`
+	StartIndex         int           `json:"start_index"`
+	EndIndex           int           `json:"end_index"`
+	TotalElevationGain float64       `json:"total_elevation_gain"`
+	AverageSpeed       float64       `json:"average_speed"`
+	MaxSpeed           float64       `json:"max_speed"`
+	AverageCadence     float64       `json:"average_cadence"`
+	DeviceWatts        bool          `json:"device_watts"`
+	AverageWatts       float64       `json:"average_watts"`
+	LapIndex           int           `json:"lap_index"`
+	Split              int           `json:"split"`
+	AverageHeartrate   float64       `json:"average_heartrate"`
+}
+
+// MetaActivity represents minimal activity data
+type MetaActivity struct {
 	ID            uint `json:"id"`
 	ResourceState int  `json:"resource_state"`
 }
 
-// SummaryAthlete represents summary information about an athlete.
-type SummaryAthlete struct {
+// MetaAthlete represents minimal athlete data
+type MetaAthlete struct {
 	ID            uint `json:"id"`
 	ResourceState int  `json:"resource_state"`
 }
 
-// SummarySegment represents summary information about a segment.
+// SummarySegment represents a summary of a segment
 type SummarySegment struct {
 	ID            uint      `json:"id"`
+	ResourceState int       `json:"resource_state"`
 	Name          string    `json:"name"`
 	ActivityType  string    `json:"activity_type"`
 	Distance      float64   `json:"distance"`
@@ -195,8 +263,8 @@ type SummarySegment struct {
 	MaximumGrade  float64   `json:"maximum_grade"`
 	ElevationHigh float64   `json:"elevation_high"`
 	ElevationLow  float64   `json:"elevation_low"`
-	StartLatlng   []float64 `json:"start_latlng"`
-	EndLatlng     []float64 `json:"end_latlng"`
+	StartLatLng   []float64 `json:"start_latlng"`
+	EndLatLng     []float64 `json:"end_latlng"`
 	ClimbCategory int       `json:"climb_category"`
 	City          string    `json:"city"`
 	State         string    `json:"state"`
@@ -204,111 +272,6 @@ type SummarySegment struct {
 	Private       bool      `json:"private"`
 	Hazardous     bool      `json:"hazardous"`
 	Starred       bool      `json:"starred"`
-}
-
-// DetailedActivity represents detailed information about an activity.
-type DetailedActivity struct {
-	ID                   uint                    `json:"id"`
-	ExternalID           string                  `json:"external_id"`
-	UploadID             uint                    `json:"upload_id"`
-	Athlete              SummaryAthlete          `json:"athlete"`
-	Name                 string                  `json:"name"`
-	Distance             float64                 `json:"distance"`
-	MovingTime           int                     `json:"moving_time"`
-	ElapsedTime          int                     `json:"elapsed_time"`
-	TotalElevationGain   float64                 `json:"total_elevation_gain"`
-	Type                 string                  `json:"type"`
-	SportType            string                  `json:"sport_type"`
-	StartDate            time.Time               `json:"start_date"`
-	StartDateLocal       time.Time               `json:"start_date_local"`
-	Timezone             string                  `json:"timezone"`
-	StartLatlng          []float64               `json:"start_latlng"`
-	EndLatlng            []float64               `json:"end_latlng"`
-	AchievementCount     int                     `json:"achievement_count"`
-	KudosCount           int                     `json:"kudos_count"`
-	CommentCount         int                     `json:"comment_count"`
-	AthleteCount         int                     `json:"athlete_count"`
-	PhotoCount           int                     `json:"photo_count"`
-	Map                  PolylineMap             `json:"map"`
-	Trainer              bool                    `json:"trainer"`
-	Commute              bool                    `json:"commute"`
-	Manual               bool                    `json:"manual"`
-	Private              bool                    `json:"private"`
-	Flagged              bool                    `json:"flagged"`
-	WorkoutType          int                     `json:"workout_type"`
-	UploadIDStr          string                  `json:"upload_id_str"`
-	AverageSpeed         float64                 `json:"average_speed"`
-	MaxSpeed             float64                 `json:"max_speed"`
-	HasKudoed            bool                    `json:"has_kudoed"`
-	GearID               string                  `json:"gear_id"`
-	Kilojoules           float64                 `json:"kilojoules"`
-	AverageWatts         float64                 `json:"average_watts"`
-	DeviceWatts          bool                    `json:"device_watts"`
-	MaxWatts             int                     `json:"max_watts"`
-	WeightedAverageWatts int                     `json:"weighted_average_watts"`
-	Description          string                  `json:"description"`
-	Photos               PhotosSummary           `json:"photos"`
-	Gear                 SummaryGear             `json:"gear"`
-	Calories             float64                 `json:"calories"`
-	SegmentEfforts       []DetailedSegmentEffort `json:"segment_efforts"`
-	DeviceName           string                  `json:"device_name"`
-	EmbedToken           string                  `json:"embed_token"`
-	SplitsMetric         []Split                 `json:"splits_metric"`
-	SplitsStandard       []Split                 `json:"splits_standard"`
-	Laps                 []Lap                   `json:"laps"`
-	BestEfforts          []DetailedSegmentEffort `json:"best_efforts"`
-	AverageCadence       float64                 `json:"average_cadence"`
-	AverageHeartrate     float64                 `json:"average_heartrate"`
-}
-
-// PhotosSummary represents a summary of photos for an activity.
-type PhotosSummary struct {
-	Count           int   `json:"count"`
-	Primary         Photo `json:"primary"`
-	UsePrimaryPhoto bool  `json:"use_primary_photo"`
-}
-
-// Photo represents a photo associated with an activity.
-type Photo struct {
-	ID       uint              `json:"id"`
-	UniqueID string            `json:"unique_id"`
-	URLs     map[string]string `json:"urls"`
-	Source   int               `json:"source"`
-}
-
-// Split represents split information for an activity.
-type Split struct {
-	Distance            float64 `json:"distance"`
-	ElapsedTime         int     `json:"elapsed_time"`
-	ElevationDifference float64 `json:"elevation_difference"`
-	MovingTime          int     `json:"moving_time"`
-	Split               int     `json:"split"`
-	AverageSpeed        float64 `json:"average_speed"`
-	PaceZone            int     `json:"pace_zone"`
-}
-
-// Lap represents information about a lap in an activity.
-type Lap struct {
-	ID                 uint            `json:"id"`
-	Activity           SummaryActivity `json:"activity"`
-	Athlete            SummaryAthlete  `json:"athlete"`
-	AverageCadence     float64         `json:"average_cadence"`
-	AverageSpeed       float64         `json:"average_speed"`
-	AverageHeartrate   float64         `json:"average_heartrate"`
-	Distance           float64         `json:"distance"`
-	ElapsedTime        int             `json:"elapsed_time"`
-	StartIndex         int             `json:"start_index"`
-	EndIndex           int             `json:"end_index"`
-	LapIndex           int             `json:"lap_index"`
-	MaxSpeed           float64         `json:"max_speed"`
-	MaxHeartrate       float64         `json:"max_heartrate"`
-	MovingTime         int             `json:"moving_time"`
-	Name               string          `json:"name"`
-	PaceZone           int             `json:"pace_zone"`
-	Split              int             `json:"split"`
-	StartDate          time.Time       `json:"start_date"`
-	StartDateLocal     time.Time       `json:"start_date_local"`
-	TotalElevationGain float64         `json:"total_elevation_gain"`
 }
 
 // SportType represents the type of sport/activity
