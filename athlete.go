@@ -7,14 +7,7 @@ import (
 	"net/http"
 )
 
-type Athlete struct {
-	ID        uint   `json:"id"`
-	UserName  string `json:"username"`
-	FirstName string `json:"firstname"`
-	LastName  string `json:"lastname"`
-}
-
-func (c *Client) GetAthlete(ctx context.Context, athleteID uint) (*Athlete, error) {
+func (c *Client) GetAthlete(ctx context.Context, athleteID uint) (*DetailedAthlete, error) {
 	req, err := http.NewRequest(http.MethodGet, APIBaseURL+"/athlete", nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create request: %w", err)
@@ -25,7 +18,7 @@ func (c *Client) GetAthlete(ctx context.Context, athleteID uint) (*Athlete, erro
 		return nil, fmt.Errorf("could not call strava: %w", err)
 	}
 
-	var v Athlete
+	var v DetailedAthlete
 	err = json.Unmarshal(body, &v)
 	if err != nil {
 		return nil, err

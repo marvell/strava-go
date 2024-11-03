@@ -1,20 +1,30 @@
 package strava
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 var (
 	ErrTokenNotFound = errors.New("token not found")
 )
 
 type APIError struct {
-	Errors []struct {
-		Code     string `json:"code"`
-		Field    string `json:"field"`
-		Resource string `json:"resource"`
-	} `json:"errors"`
-	Message string `json:"message"`
+	Status   int    `json:"status"`
+	Resource string `json:"resource"`
+	Field    string `json:"field"`
+	Code     string `json:"code"`
 }
 
 func (e APIError) Error() string {
+	return fmt.Sprintf("%s.%s: %s", e.Resource, e.Field, e.Code)
+}
+
+type APIErrors struct {
+	Errors  []APIError `json:"errors"`
+	Message string     `json:"message"`
+}
+
+func (e APIErrors) Error() string {
 	return e.Message
 }
