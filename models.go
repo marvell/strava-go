@@ -91,51 +91,51 @@ type Map struct {
 
 // SummaryActivity represents a summary of an activity on Strava
 type SummaryActivity struct {
-	ID                   uint      `json:"id"`
-	ExternalID           string    `json:"external_id"`
-	UploadID             uint      `json:"upload_id"`
-	Athlete              *Athlete  `json:"athlete"`
-	Name                 string    `json:"name"`
-	Distance             float64   `json:"distance"`
-	MovingTime           int       `json:"moving_time"`
-	ElapsedTime          int       `json:"elapsed_time"`
-	TotalElevationGain   float64   `json:"total_elevation_gain"`
-	ElevHigh             float64   `json:"elev_high"`
-	ElevLow              float64   `json:"elev_low"`
-	Type                 string    `json:"type"`
-	SportType            SportType `json:"sport_type"`
-	StartDate            time.Time `json:"start_date"`
-	StartDateLocal       time.Time `json:"start_date_local"`
-	Timezone             string    `json:"timezone"`
-	StartLatLng          []float64 `json:"start_latlng"`
-	EndLatLng            []float64 `json:"end_latlng"`
-	AchievementCount     int       `json:"achievement_count"`
-	KudosCount           int       `json:"kudos_count"`
-	CommentCount         int       `json:"comment_count"`
-	AthleteCount         int       `json:"athlete_count"`
-	PhotoCount           int       `json:"photo_count"`
-	TotalPhotoCount      int       `json:"total_photo_count"`
-	Map                  *Map      `json:"map"`
-	Trainer              bool      `json:"trainer"`
-	Commute              bool      `json:"commute"`
-	Manual               bool      `json:"manual"`
-	Private              bool      `json:"private"`
-	Flagged              bool      `json:"flagged"`
-	WorkoutType          int       `json:"workout_type"`
-	GearID               string    `json:"gear_id"`
-	AverageSpeed         float64   `json:"average_speed"`
-	MaxSpeed             float64   `json:"max_speed"`
-	AverageCadence       float64   `json:"average_cadence"`
-	AverageTemp          float64   `json:"average_temp"`
-	AverageWatts         float64   `json:"average_watts"`
-	WeightedAverageWatts int       `json:"weighted_average_watts"`
-	Kilojoules           float64   `json:"kilojoules"`
-	DeviceWatts          bool      `json:"device_watts"`
-	HasHeartrate         bool      `json:"has_heartrate"`
-	AverageHeartrate     float64   `json:"average_heartrate"`
-	MaxHeartrate         float64   `json:"max_heartrate"`
-	MaxWatts             int       `json:"max_watts"`
-	SufferScore          int       `json:"suffer_score"`
+	ID                   uint         `json:"id"`
+	ExternalID           string       `json:"external_id"`
+	UploadID             uint         `json:"upload_id"`
+	Athlete              *Athlete     `json:"athlete"`
+	Name                 string       `json:"name"`
+	Distance             float64      `json:"distance"`
+	MovingTime           int          `json:"moving_time"`
+	ElapsedTime          int          `json:"elapsed_time"`
+	TotalElevationGain   float64      `json:"total_elevation_gain"`
+	ElevHigh             float64      `json:"elev_high"`
+	ElevLow              float64      `json:"elev_low"`
+	Type                 ActivityType `json:"type"`
+	SportType            SportType    `json:"sport_type"`
+	StartDate            time.Time    `json:"start_date"`
+	StartDateLocal       time.Time    `json:"start_date_local"`
+	Timezone             string       `json:"timezone"`
+	StartLatLng          []float64    `json:"start_latlng"`
+	EndLatLng            []float64    `json:"end_latlng"`
+	AchievementCount     int          `json:"achievement_count"`
+	KudosCount           int          `json:"kudos_count"`
+	CommentCount         int          `json:"comment_count"`
+	AthleteCount         int          `json:"athlete_count"`
+	PhotoCount           int          `json:"photo_count"`
+	TotalPhotoCount      int          `json:"total_photo_count"`
+	Map                  *Map         `json:"map"`
+	Trainer              bool         `json:"trainer"`
+	Commute              bool         `json:"commute"`
+	Manual               bool         `json:"manual"`
+	Private              bool         `json:"private"`
+	Flagged              bool         `json:"flagged"`
+	WorkoutType          int          `json:"workout_type"`
+	GearID               string       `json:"gear_id"`
+	AverageSpeed         float64      `json:"average_speed"`
+	MaxSpeed             float64      `json:"max_speed"`
+	AverageCadence       float64      `json:"average_cadence"`
+	AverageTemp          float64      `json:"average_temp"`
+	AverageWatts         float64      `json:"average_watts"`
+	WeightedAverageWatts int          `json:"weighted_average_watts"`
+	Kilojoules           float64      `json:"kilojoules"`
+	DeviceWatts          bool         `json:"device_watts"`
+	HasHeartrate         bool         `json:"has_heartrate"`
+	AverageHeartrate     float64      `json:"average_heartrate"`
+	MaxHeartrate         float64      `json:"max_heartrate"`
+	MaxWatts             int          `json:"max_watts"`
+	SufferScore          int          `json:"suffer_score"`
 }
 
 // DetailedActivity represents a detailed activity on Strava
@@ -328,4 +328,47 @@ const (
 	SportTypeWindsurf                      SportType = "Windsurf"
 	SportTypeWorkout                       SportType = "Workout"
 	SportTypeYoga                          SportType = "Yoga"
+)
+
+// ActivityType represents the type of activity
+type ActivityType string
+
+const (
+	ActivityTypeAlpineSki       ActivityType = "AlpineSki"
+	ActivityTypeBackcountrySki  ActivityType = "BackcountrySki"
+	ActivityTypeCanoeing        ActivityType = "Canoeing"
+	ActivityTypeCrossfit        ActivityType = "Crossfit"
+	ActivityTypeEBikeRide       ActivityType = "EBikeRide"
+	ActivityTypeElliptical      ActivityType = "Elliptical"
+	ActivityTypeGolf            ActivityType = "Golf"
+	ActivityTypeHandcycle       ActivityType = "Handcycle"
+	ActivityTypeHike            ActivityType = "Hike"
+	ActivityTypeIceSkate        ActivityType = "IceSkate"
+	ActivityTypeInlineSkate     ActivityType = "InlineSkate"
+	ActivityTypeKayaking        ActivityType = "Kayaking"
+	ActivityTypeKitesurf        ActivityType = "Kitesurf"
+	ActivityTypeNordicSki       ActivityType = "NordicSki"
+	ActivityTypeRide            ActivityType = "Ride"
+	ActivityTypeRockClimbing    ActivityType = "RockClimbing"
+	ActivityTypeRollerSki       ActivityType = "RollerSki"
+	ActivityTypeRowing          ActivityType = "Rowing"
+	ActivityTypeRun             ActivityType = "Run"
+	ActivityTypeSail            ActivityType = "Sail"
+	ActivityTypeSkateboard      ActivityType = "Skateboard"
+	ActivityTypeSnowboard       ActivityType = "Snowboard"
+	ActivityTypeSnowshoe        ActivityType = "Snowshoe"
+	ActivityTypeSoccer          ActivityType = "Soccer"
+	ActivityTypeStairStepper    ActivityType = "StairStepper"
+	ActivityTypeStandUpPaddling ActivityType = "StandUpPaddling"
+	ActivityTypeSurfing         ActivityType = "Surfing"
+	ActivityTypeSwim            ActivityType = "Swim"
+	ActivityTypeVelomobile      ActivityType = "Velomobile"
+	ActivityTypeVirtualRide     ActivityType = "VirtualRide"
+	ActivityTypeVirtualRun      ActivityType = "VirtualRun"
+	ActivityTypeWalk            ActivityType = "Walk"
+	ActivityTypeWeightTraining  ActivityType = "WeightTraining"
+	ActivityTypeWheelchair      ActivityType = "Wheelchair"
+	ActivityTypeWindsurf        ActivityType = "Windsurf"
+	ActivityTypeWorkout         ActivityType = "Workout"
+	ActivityTypeYoga            ActivityType = "Yoga"
 )
