@@ -34,7 +34,8 @@ func main() {
 		panic(err)
 	}
 
-	cl := strava.NewClient(config.ID, config.Secret, config.RedirectURL, ts, strava.WithDebug())
+	cl := strava.NewClient(ts, strava.WithDebug())
+	// cl := strava.NewClientWithAuth(config.ID, config.Secret, config.RedirectURL, ts, strava.WithDebug())
 
 	athleteID := config.AthleteID
 	if athleteID == 0 {
@@ -63,7 +64,7 @@ func main() {
 	to := time.Now()
 	from := to.Add(-time.Hour * 24 * 7)
 
-	activities, err := cl.GetActivities(ctx, athleteID, from, to)
+	activities, err := cl.GetSummaryActivities(ctx, athleteID, from, to)
 	if err != nil {
 		panic(err)
 	}

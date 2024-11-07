@@ -29,7 +29,22 @@ type TokenStorage interface {
 
 type Option func(*Client)
 
-func NewClient(id, secret, redirectURL string, ts TokenStorage, opts ...Option) *Client {
+func NewClient(ts TokenStorage, opts ...Option) *Client {
+	c := &Client{
+		oacfg:  oauth2.Config{},
+		tstore: ts,
+		lmt:    nil,
+		logger: slog.Default(),
+	}
+
+	for _, opt := range opts {
+		opt(c)
+	}
+
+	return c
+}
+
+func NewClientWithAuth(id, secret, redirectURL string, ts TokenStorage, opts ...Option) *Client {
 	oacfg := oauth2.Config{
 		ClientID:     id,
 		ClientSecret: secret,
