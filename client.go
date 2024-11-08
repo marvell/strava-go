@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httputil"
+	"sync"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -29,22 +30,7 @@ type TokenStorage interface {
 
 type Option func(*Client)
 
-func NewClient(ts TokenStorage, opts ...Option) *Client {
-	c := &Client{
-		oacfg:  oauth2.Config{},
-		tstore: ts,
-		lmt:    nil,
-		logger: slog.Default(),
-	}
-
-	for _, opt := range opts {
-		opt(c)
-	}
-
-	return c
-}
-
-func NewClientWithAuth(id, secret, redirectURL string, ts TokenStorage, opts ...Option) *Client {
+func NewClient(id, secret, redirectURL string, ts TokenStorage, opts ...Option) *Client {
 	oacfg := oauth2.Config{
 		ClientID:     id,
 		ClientSecret: secret,
@@ -72,13 +58,19 @@ func NewClientWithAuth(id, secret, redirectURL string, ts TokenStorage, opts ...
 
 type Client struct {
 	transport *http.Transport
-	oacfg     oauth2.Config
-	tstore    TokenStorage
+
+	oacfg  oauth2.Config
+	tstore TokenStorage
 
 	lmt *rate.Limiter
 
 	maxRetries uint
 	retryDelay time.Duration
+
+	webhookCallbackURL string
+	subscriptionID     uint
+	eventHandlers      []EventHandler
+	eventHandlersLock  sync.RWMutex
 
 	logger *slog.Logger
 	debug  bool
@@ -103,7 +95,7 @@ func (c *Client) call(ctx context.Context, athleteID uint, req *http.Request, re
 		if err != nil {
 			c.logger.WarnContext(ctx, "dump request", slog.Any("error", err))
 		} else {
-			c.logger.DebugContext(ctx, "request", slog.Any("dump", reqDump))
+			c.logger.DebugContext(ctx, fmt.Sprintf("strava api request: %s %s", req.Method, req.URL.Path), slog.Any("dump", reqDump))
 		}
 	}
 
@@ -127,7 +119,7 @@ func (c *Client) call(ctx context.Context, athleteID uint, req *http.Request, re
 		if err != nil {
 			c.logger.WarnContext(ctx, "dump response", slog.Any("error", err))
 		} else {
-			c.logger.DebugContext(ctx, "response", slog.Any("dump", respDump))
+			c.logger.DebugContext(ctx, fmt.Sprintf("strava api response: %s %s", req.Method, req.URL.Path), slog.Any("dump", respDump))
 		}
 	}
 
@@ -136,7 +128,7 @@ func (c *Client) call(ctx context.Context, athleteID uint, req *http.Request, re
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode >= http.StatusBadRequest {
 		var details any = body
 
 		var apiErr Fault
@@ -150,7 +142,22 @@ func (c *Client) call(ctx context.Context, athleteID uint, req *http.Request, re
 	return body, nil
 }
 
+func (c *Client) getHttpClient(_ context.Context) *http.Client {
+	hc := &http.Client{
+		Timeout: HTTPClientTimeout,
+	}
+	if c.transport != nil {
+		hc.Transport = c.transport
+	}
+
+	return hc
+}
+
 func (c *Client) getHttpClientFor(ctx context.Context, athleteID uint) (*http.Client, error) {
+	if athleteID == 0 {
+		return c.getHttpClient(ctx), nil
+	}
+
 	token, err := c.token(ctx, athleteID)
 	if err != nil {
 		return nil, err

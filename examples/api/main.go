@@ -29,13 +29,12 @@ func main() {
 
 	ctx := context.Background()
 
-	ts, err := file.NewTokenStorage("./tokens")
+	ts, err := file.NewTokenStorage("../tokens")
 	if err != nil {
 		panic(err)
 	}
 
-	cl := strava.NewClient(ts, strava.WithDebug())
-	// cl := strava.NewClientWithAuth(config.ID, config.Secret, config.RedirectURL, ts, strava.WithDebug())
+	cl := strava.NewClient(config.ID, config.Secret, config.RedirectURL, ts, strava.WithDebug())
 
 	athleteID := config.AthleteID
 	if athleteID == 0 {

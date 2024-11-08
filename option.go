@@ -38,3 +38,9 @@ func WithTransport(t *http.Transport) Option {
 		c.transport = t
 	}
 }
+
+func WithWebhookCallbackURL(url string) Option {
+	return func(c *Client) {
+		c.webhookCallbackURL = url
+	}
+}

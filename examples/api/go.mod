@@ -1,8 +1,8 @@
-module github.com/marvell/strava-go/example
+module github.com/marvell/strava-go/examples/api
 
 go 1.22.5
 
-replace github.com/marvell/strava-go => ..
+replace github.com/marvell/strava-go => ../..
 
 require (
 	github.com/caarlos0/env/v11 v11.2.2
