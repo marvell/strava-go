@@ -6,14 +6,15 @@ import (
 	"sync"
 
 	"github.com/marvell/strava-go"
-	"golang.org/x/oauth2"
 )
 
 type TokenStorage struct {
 	m sync.Map
 }
 
-func (ts *TokenStorage) Get(_ context.Context, athleteID uint) (*oauth2.Token, error) {
+var _ strava.TokenStorage = (*TokenStorage)(nil)
+
+func (ts *TokenStorage) Get(_ context.Context, athleteID uint) (*strava.Token, error) {
 	slog.Debug("get token", "athleteID", athleteID)
 
 	v, ok := ts.m.Load(athleteID)
@@ -21,7 +22,7 @@ func (ts *TokenStorage) Get(_ context.Context, athleteID uint) (*oauth2.Token, e
 		return nil, strava.ErrTokenNotFound
 	}
 
-	t, ok := v.(*oauth2.Token)
+	t, ok := v.(*strava.Token)
 	if !ok {
 		return nil, strava.ErrTokenNotFound
 	}
@@ -29,7 +30,7 @@ func (ts *TokenStorage) Get(_ context.Context, athleteID uint) (*oauth2.Token, e
 	return t, nil
 }
 
-func (ts *TokenStorage) Save(_ context.Context, athleteID uint, token *oauth2.Token) error {
+func (ts *TokenStorage) Save(_ context.Context, athleteID uint, token *strava.Token) error {
 	slog.Debug("save token", "athleteID", athleteID)
 
 	ts.m.Store(athleteID, token)

@@ -24,8 +24,8 @@ const (
 )
 
 type TokenStorage interface {
-	Get(ctx context.Context, athleteID uint) (*oauth2.Token, error)
-	Save(ctx context.Context, athleteID uint, token *oauth2.Token) error
+	Get(ctx context.Context, athleteID uint) (*Token, error)
+	Save(ctx context.Context, athleteID uint, token *Token) error
 }
 
 type Option func(*Client)
@@ -39,7 +39,7 @@ func NewClient(id, secret, redirectURL string, ts TokenStorage, opts ...Option) 
 			TokenURL: OAuthBaseURL + "/token",
 		},
 		RedirectURL: redirectURL,
-		Scopes:      []string{"activity:read_all,activity:write"},
+		Scopes:      []string{"read"},
 	}
 
 	c := &Client{
@@ -181,10 +181,11 @@ func (c *Client) token(ctx context.Context, athleteID uint) (*oauth2.Token, erro
 	}
 
 	if !token.Valid() {
-		token, err = c.oacfg.TokenSource(ctx, token).Token()
+		oauthToken, err := c.oacfg.TokenSource(ctx, token.Token).Token()
 		if err != nil {
 			return nil, fmt.Errorf("refresh token: %w", err)
 		}
+		token.Token = oauthToken
 
 		err = c.tstore.Save(ctx, athleteID, token)
 		if err != nil {
@@ -192,5 +193,5 @@ func (c *Client) token(ctx context.Context, athleteID uint) (*oauth2.Token, erro
 		}
 	}
 
-	return token, nil
+	return token.Token, nil
 }

@@ -1,13 +1,14 @@
 package postgres
 
 import (
-	"golang.org/x/oauth2"
 	"gorm.io/gorm"
+
+	"github.com/marvell/strava-go"
 )
 
 type Token struct {
 	*gorm.Model
-	*oauth2.Token
+	*strava.Token
 }
 
 func (t Token) TableName() string {

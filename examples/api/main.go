@@ -93,7 +93,7 @@ func auth(ctx context.Context, cl *strava.Client) uint {
 		panic(err)
 	}
 
-	athleteID, err := cl.AuthExchange(ctx, stravaCode)
+	athleteID, err := cl.AuthExchange(ctx, stravaCode, "", "")
 	if err != nil {
 		panic(err)
 	}

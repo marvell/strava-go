@@ -9,12 +9,13 @@ import (
 	"path/filepath"
 
 	"github.com/marvell/strava-go"
-	"golang.org/x/oauth2"
 )
 
 type TokenStorage struct {
 	storageDir string
 }
+
+var _ strava.TokenStorage = (*TokenStorage)(nil)
 
 func NewTokenStorage(storageDir string) (*TokenStorage, error) {
 	if err := os.MkdirAll(storageDir, 0755); err != nil {
@@ -23,7 +24,7 @@ func NewTokenStorage(storageDir string) (*TokenStorage, error) {
 	return &TokenStorage{storageDir: storageDir}, nil
 }
 
-func (ts *TokenStorage) Get(_ context.Context, athleteID uint) (*oauth2.Token, error) {
+func (ts *TokenStorage) Get(_ context.Context, athleteID uint) (*strava.Token, error) {
 	slog.Debug("get token", "athleteID", athleteID)
 
 	data, err := os.ReadFile(ts.filename(athleteID))
@@ -34,7 +35,7 @@ func (ts *TokenStorage) Get(_ context.Context, athleteID uint) (*oauth2.Token, e
 		return nil, fmt.Errorf("read token file: %w", err)
 	}
 
-	var token oauth2.Token
+	var token strava.Token
 	if err := json.Unmarshal(data, &token); err != nil {
 		return nil, fmt.Errorf("unmarshal token: %w", err)
 	}
@@ -42,7 +43,7 @@ func (ts *TokenStorage) Get(_ context.Context, athleteID uint) (*oauth2.Token, e
 	return &token, nil
 }
 
-func (ts *TokenStorage) Save(_ context.Context, athleteID uint, token *oauth2.Token) error {
+func (ts *TokenStorage) Save(_ context.Context, athleteID uint, token *strava.Token) error {
 	slog.Debug("save token", "athleteID", athleteID)
 
 	data, err := json.Marshal(token)

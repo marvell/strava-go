@@ -7,6 +7,15 @@ import (
 	"golang.org/x/oauth2"
 )
 
+const (
+	OAuthStaticState = "strava-go"
+)
+
+type Token struct {
+	*oauth2.Token
+	Scope string
+}
+
 func (c *Client) AuthRedirectURL() string {
 	return c.oacfg.RedirectURL
 }
@@ -20,20 +29,29 @@ func (c *Client) AuthCodeURLWithRedirectURL(redirectURL string) string {
 	if redirectURL != "" {
 		oacfg.RedirectURL = redirectURL
 	}
-	return oacfg.AuthCodeURL("state", oauth2.AccessTypeOffline)
+	return oacfg.AuthCodeURL(OAuthStaticState, oauth2.AccessTypeOffline)
 }
 
-func (c *Client) AuthExchange(ctx context.Context, code string) (uint, error) {
-	token, err := c.oacfg.Exchange(ctx, code)
+func (c *Client) AuthExchange(ctx context.Context, code, scope, state string) (uint, error) {
+	if state != OAuthStaticState {
+		return 0, fmt.Errorf("invalid state: %s", state)
+	}
+
+	oauthToken, err := c.oacfg.Exchange(ctx, code)
 	if err != nil {
 		return 0, fmt.Errorf("could not exchange code for token: %w", err)
 	}
 
-	extra, ok := token.Extra("athlete").(map[string]any)
+	extra, ok := oauthToken.Extra("athlete").(map[string]any)
 	if !ok {
 		return 0, fmt.Errorf("could not get athlete data from token")
 	}
 	athleteID := uint(extra["id"].(float64))
+
+	token := &Token{
+		Token: oauthToken,
+		Scope: scope,
+	}
 
 	if err := c.tstore.Save(ctx, athleteID, token); err != nil {
 		return 0, fmt.Errorf("could not save token: %w", err)

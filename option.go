@@ -44,3 +44,9 @@ func WithWebhookCallbackURL(url string) Option {
 		c.webhookCallbackURL = url
 	}
 }
+
+func WithScopes(scopes ...string) Option {
+	return func(c *Client) {
+		c.oacfg.Scopes = scopes
+	}
+}

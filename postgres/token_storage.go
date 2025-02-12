@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/marvell/strava-go"
-	"golang.org/x/oauth2"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +25,9 @@ type TokenStorage struct {
 	db *gorm.DB
 }
 
-func (ts *TokenStorage) Get(ctx context.Context, athleteID uint) (*oauth2.Token, error) {
+var _ strava.TokenStorage = (*TokenStorage)(nil)
+
+func (ts *TokenStorage) Get(ctx context.Context, athleteID uint) (*strava.Token, error) {
 	var t Token
 	if err := ts.db.WithContext(ctx).First(&t, athleteID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -39,7 +40,7 @@ func (ts *TokenStorage) Get(ctx context.Context, athleteID uint) (*oauth2.Token,
 	return t.Token, nil
 }
 
-func (ts *TokenStorage) Save(ctx context.Context, athleteID uint, token *oauth2.Token) error {
+func (ts *TokenStorage) Save(ctx context.Context, athleteID uint, token *strava.Token) error {
 	var t Token
 	if err := ts.db.WithContext(ctx).First(&t, athleteID).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
