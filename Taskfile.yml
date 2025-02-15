@@ -8,4 +8,12 @@ dotenv:
 tasks:
   lint:
     cmds:
-      - golangci-lint run
+      - go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.4 run
+
+  test:
+    desc: Run tests with coverage
+    cmds:
+      - mkdir -p ./tmp
+      - go test -cover -coverprofile=./tmp/coverage.out ./...
+      - go tool cover -func=./tmp/coverage.out
+      - go tool cover -html=./tmp/coverage.out -o ./tmp/coverage.html
