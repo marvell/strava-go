@@ -43,15 +43,15 @@ func (ts *TokenStorage) Get(_ context.Context, athleteID uint) (*strava.Token, e
 	return &token, nil
 }
 
-func (ts *TokenStorage) Save(_ context.Context, athleteID uint, token *strava.Token) error {
-	slog.Debug("save token", "athleteID", athleteID)
+func (ts *TokenStorage) Save(_ context.Context, token *strava.Token) error {
+	slog.Debug("save token", "athleteID", token.AthleteID)
 
 	data, err := json.Marshal(token)
 	if err != nil {
 		return fmt.Errorf("marshal token: %w", err)
 	}
 
-	if err := os.WriteFile(ts.filename(athleteID), data, 0600); err != nil {
+	if err := os.WriteFile(ts.filename(token.AthleteID), data, 0600); err != nil {
 		return fmt.Errorf("write token file: %w", err)
 	}
 

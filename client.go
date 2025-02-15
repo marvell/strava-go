@@ -25,7 +25,7 @@ const (
 
 type TokenStorage interface {
 	Get(ctx context.Context, athleteID uint) (*Token, error)
-	Save(ctx context.Context, athleteID uint, token *Token) error
+	Save(ctx context.Context, token *Token) error
 }
 
 type Option func(*Client)
@@ -187,7 +187,7 @@ func (c *Client) token(ctx context.Context, athleteID uint) (*oauth2.Token, erro
 		}
 		token.Token = oauthToken
 
-		err = c.tstore.Save(ctx, athleteID, token)
+		err = c.tstore.Save(ctx, token)
 		if err != nil {
 			return nil, fmt.Errorf("save token to %T: %w", c.tstore, err)
 		}

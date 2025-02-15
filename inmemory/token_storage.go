@@ -30,9 +30,9 @@ func (ts *TokenStorage) Get(_ context.Context, athleteID uint) (*strava.Token, e
 	return t, nil
 }
 
-func (ts *TokenStorage) Save(_ context.Context, athleteID uint, token *strava.Token) error {
-	slog.Debug("save token", "athleteID", athleteID)
+func (ts *TokenStorage) Save(_ context.Context, token *strava.Token) error {
+	slog.Debug("save token", "athleteID", token.AthleteID)
 
-	ts.m.Store(athleteID, token)
+	ts.m.Store(token.AthleteID, token)
 	return nil
 }

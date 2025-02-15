@@ -40,16 +40,16 @@ func (ts *TokenStorage) Get(ctx context.Context, athleteID uint) (*strava.Token,
 	return t.Token, nil
 }
 
-func (ts *TokenStorage) Save(ctx context.Context, athleteID uint, token *strava.Token) error {
+func (ts *TokenStorage) Save(ctx context.Context, token *strava.Token) error {
 	var t Token
-	if err := ts.db.WithContext(ctx).First(&t, athleteID).Error; err != nil {
+	if err := ts.db.WithContext(ctx).First(&t, token.AthleteID).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("could not get token: %w", err)
 		}
 
 		t = Token{
 			Model: &gorm.Model{
-				ID: athleteID,
+				ID: token.AthleteID,
 			},
 		}
 	}

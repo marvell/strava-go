@@ -13,22 +13,24 @@ const (
 
 type Token struct {
 	*oauth2.Token
-	Scope string
+	AthleteID uint   `json:"athlete_id"`
+	Scope     string `json:"scope"`
 }
 
 func (c *Client) AuthRedirectURL() string {
 	return c.oacfg.RedirectURL
 }
 
-func (c *Client) AuthCodeURL() string {
-	return c.AuthCodeURLWithRedirectURL("")
-}
-
-func (c *Client) AuthCodeURLWithRedirectURL(redirectURL string) string {
+func (c *Client) AuthCodeURL(redirectURL string, scopes []string) string {
 	oacfg := c.oacfg
+	oacfg.RedirectURL = redirectURL
 	if redirectURL != "" {
 		oacfg.RedirectURL = redirectURL
 	}
+	if len(scopes) > 0 {
+		oacfg.Scopes = scopes
+	}
+
 	return oacfg.AuthCodeURL(OAuthStaticState, oauth2.AccessTypeOffline)
 }
 
@@ -49,11 +51,12 @@ func (c *Client) AuthExchange(ctx context.Context, code, scope, state string) (u
 	athleteID := uint(extra["id"].(float64))
 
 	token := &Token{
-		Token: oauthToken,
-		Scope: scope,
+		Token:     oauthToken,
+		AthleteID: athleteID,
+		Scope:     scope,
 	}
 
-	if err := c.tstore.Save(ctx, athleteID, token); err != nil {
+	if err := c.tstore.Save(ctx, token); err != nil {
 		return 0, fmt.Errorf("could not save token: %w", err)
 	}
 

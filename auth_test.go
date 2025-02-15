@@ -27,7 +27,7 @@ func TestClient_AuthCodeURL(t *testing.T) {
 	want := u.String()
 
 	// act
-	got := c.AuthCodeURL()
+	got := c.AuthCodeURL("", nil)
 
 	// assert
 	assert.Equal(t, want, got)
