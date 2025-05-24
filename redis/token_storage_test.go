@@ -14,8 +14,10 @@ import (
 )
 
 var testRedisClient *redis.Client
+var redisAvailable bool // NEW: Global variable to track Redis availability
 
 func TestMain(m *testing.M) {
+	redisAvailable = true // Initialize redisAvailable
 	// Connection options for Redis. Using an environment variable for the address
 	// allows flexibility for different test environments (e.g., CI vs local).
 	redisAddr := os.Getenv("STRAVA_TEST_REDIS_ADDR")
@@ -31,10 +33,11 @@ func TestMain(m *testing.M) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := testRedisClient.Ping(ctx).Err(); err != nil {
-		fmt.Printf("Could not connect to Redis at %s: %v\n", redisAddr, err)
-		fmt.Println("Skipping Redis integration tests. Ensure Redis is running and accessible.")
-		// os.Exit(1) // Or skip tests if Redis is essential
-		return // Exit TestMain without running tests if Redis is not available
+		redisAvailable = false
+		fmt.Printf("Could not connect to Redis at %s: %v. Redis integration tests will be skipped.\n", redisAddr, err)
+		// Do not return or exit; allow m.Run() for other tests
+	} else {
+		fmt.Printf("Successfully connected to Redis at %s for testing.\n", redisAddr)
 	}
 
 	// Run tests
@@ -43,13 +46,22 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+// NEW: func checkRedis(t *testing.T)
+func checkRedis(t *testing.T) {
+	if !redisAvailable {
+		t.Skipf("Skipping Redis integration test: Redis not available at %s", testRedisClient.Options().Addr)
+	}
+}
+
 func flushRedis(ctx context.Context, t *testing.T) {
+	checkRedis(t) // NEW: Call checkRedis(t) here.
 	if err := testRedisClient.FlushDB(ctx).Err(); err != nil {
 		t.Fatalf("Failed to flush Redis: %v", err)
 	}
 }
 
 func TestNewTokenStorage(t *testing.T) {
+	checkRedis(t) // NEW: Call checkRedis(t) here.
 	tsDefault := NewTokenStorage(testRedisClient, "")
 	if tsDefault.prefix != "strava:token:" {
 		t.Errorf("Expected default prefix 'strava:token:', got '%s'", tsDefault.prefix)
@@ -63,6 +75,7 @@ func TestNewTokenStorage(t *testing.T) {
 }
 
 func TestTokenStorage_SaveAndGet(t *testing.T) {
+	checkRedis(t) // NEW: Call checkRedis(t) here.
 	ctx := context.Background()
 	flushRedis(ctx, t)
 
@@ -85,11 +98,13 @@ func TestTokenStorage_SaveAndGet(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Save() error = %v, wantErr nil", err)
 	}
+	t.Logf("Token for athlete %d saved successfully.", athleteID) // OPTIONAL: Use t.Logf
 
 	retrievedToken, err := ts.Get(ctx, athleteID)
 	if err != nil {
 		t.Fatalf("Get() error = %v, wantErr nil", err)
 	}
+	t.Logf("Token for athlete %d retrieved successfully.", athleteID) // OPTIONAL: Use t.Logf
 
 	if retrievedToken.AccessToken != token.AccessToken {
 		t.Errorf("Retrieved AccessToken = %s, want %s", retrievedToken.AccessToken, token.AccessToken)
@@ -110,6 +125,7 @@ func TestTokenStorage_SaveAndGet(t *testing.T) {
 }
 
 func TestTokenStorage_Get_NotFound(t *testing.T) {
+	checkRedis(t) // NEW: Call checkRedis(t) here.
 	ctx := context.Background()
 	flushRedis(ctx, t)
 
@@ -123,6 +139,7 @@ func TestTokenStorage_Get_NotFound(t *testing.T) {
 }
 
 func TestTokenStorage_Save_Overwrite(t *testing.T) {
+	checkRedis(t) // NEW: Call checkRedis(t) here.
 	ctx := context.Background()
 	flushRedis(ctx, t)
 
